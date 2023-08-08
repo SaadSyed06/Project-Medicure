@@ -1,0 +1,14 @@
+---
+- hosts: ubuntu
+
+  tasks:
+  - name: create docker image
+    command: docker build -t regapp:latest .
+    args:
+     chdir: /home/ubuntu/docker
+
+  - name: create tag to push image onto dockerhub
+    command: docker tag regapp:latest osamah9/regapp:latest
+
+  - name: push docker image
+    command: docker push osamah9/regapp:latest

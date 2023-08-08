@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    stages {
+        stage("Clone Code"){
+            steps{
+                git branch: 'main', url: 'https://github.com/Osamah999/Jenkins-CI.git'
+            }
+        }
+        stage("Build Code"){
+            steps{
+                sh "mvn clean install"
+            }
+        }
+        stage("Pushing Code"){
+            steps{
+                sshagent(['ansible_user']) {
+                    // some block
+                   sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/CI-Job/target/Medicure-1.0-SNAPSHOT.war ubuntu@ec2-18-212-60-171.compute-1.amazonaws.com:/home/ubuntu/docker/"
+                }
+            }
+        }
+        stage("Create Docker Image"){
+            steps{
+               sshagent(['ansible_user']) {
+                    // some block
+                   sh "ssh -o StrictHostKeyChecking=no ubuntu@ec2-18-212-60-171.compute-1.amazonaws.com 'ansible-playbook docker/regapp.yml'"
+                }
+            }
+        }
+        stage("Deploy Code"){
+            steps{
+               sshagent(['ansible_user']) {
+                    // some block
+                   sh "ssh -o StrictHostKeyChecking=no ubuntu@ec2-18-212-60-171.compute-1.amazonaws.com 'ansible-playbook docker/deploy_regapp.yml'"
+                }
+            }
+        }
+    }
+}
